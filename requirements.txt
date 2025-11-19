@@ -1,6 +1,5 @@
 Flask
-pandas
 Flask-WTF
-gunicorn
-reportlab
 psycopg2-binary
+xhtml2pdf
+gunicorn
