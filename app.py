@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# app.py (corrigido)
-=======
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, SubmitField, TextAreaField
@@ -12,7 +8,7 @@ import random
 import locale
 from collections import defaultdict
 import sys
-<<<<<<< HEAD
+
 import os
 
 # reportlab
@@ -55,7 +51,7 @@ except locale.Error:
     except locale.Error:
         print("Aviso: Configuração de localidade em Português falhou.")
 
-<<<<<<< HEAD
+
 # ReportLab styles
 =======
 # --- DEFINIÇÃO GLOBAL DOS ESTILOS DO REPORTLAB ---
@@ -65,7 +61,7 @@ PDF_STYLES.add(ParagraphStyle(name='CustomTitle', fontSize=18, alignment=1, spac
 PDF_STYLES.add(ParagraphStyle(name='CustomHeading2', fontSize=14, alignment=0, spaceBefore=15, spaceAfter=8, fontName='Helvetica-Bold', textColor=colors.darkblue))
 PDF_STYLES.add(ParagraphStyle(name='CustomNormalSmall', fontSize=10, alignment=0, spaceAfter=5, textColor=colors.black))
 PDF_STYLES.add(ParagraphStyle(name='CustomSummary', fontSize=16, alignment=0, spaceAfter=10, fontName='Helvetica-Bold', textColor=colors.black))
-<<<<<<< HEAD
+
 
 # helpers: generate random weekly if none
 =======
@@ -85,7 +81,7 @@ def gerar_disparos_semanais_simulados():
     dias = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo']
     return {dia: random.randint(10, 80) for dia in dias}
 
-<<<<<<< HEAD
+
 # Forms
 =======
 db_vendedores = [
@@ -102,21 +98,20 @@ db_eventos = [
 
 # --- FORMULÁRIOS WTFORMS (Sem alterações) ---
 
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
 class VendedorForm(FlaskForm):
     nome = StringField('Nome', validators=[DataRequired(), Length(min=2, max=100)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     loja_id = SelectField('Loja', coerce=int, validators=[DataRequired()])
     status = SelectField('Status Inicial', choices=[
-<<<<<<< HEAD
+
         ('Conectado', 'Conectado'),
         ('Restrito', 'Restrito'),
         ('Bloqueado', 'Bloqueado'),
-=======
+
         ('Conectado', 'Conectado'), 
         ('Restrito', 'Restrito'), 
         ('Bloqueado', 'Bloqueado'), 
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
         ('Desconectado', 'Desconectado')
     ], validators=[DataRequired()])
     submit = SubmitField('Adicionar Vendedor')
@@ -127,18 +122,16 @@ class LojaForm(FlaskForm):
     nome_vendedor = StringField('Nome do Gestor (Vendedor)', validators=[DataRequired(), Length(min=2)])
     email_vendedor = StringField('Email do Gestor (Vendedor)', validators=[DataRequired(), Email()])
     submit = SubmitField('Criar Loja')
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
+
 class LojaEditForm(FlaskForm):
     nome = StringField('Nome da Loja', validators=[DataRequired(), Length(min=3)])
     responsavel = StringField('Responsável', validators=[DataRequired(), Length(min=3)])
     submit = SubmitField('Salvar Alterações')
 
 class RelatorioForm(FlaskForm):
-<<<<<<< HEAD
+
     loja_id_relatorio = SelectField('Selecione a Loja', coerce=int, validators=[DataRequired()])
     ligacoes_realizadas = TextAreaField(' SCRIPT DISPAROS DE LIGAÇÕES', validators=[Optional(), Length(max=500)], render_kw={"rows": 5})
     submit = SubmitField('Gerar PDF')
@@ -183,12 +176,12 @@ def processar_dados_painel():
     """Calcula KPIs e organiza dados para o Painel de Controle."""
     total_disparos = sum(sum(v['disparos_semanais'].values()) for v in db_vendedores)
     
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
     status_kpis = defaultdict(int)
     vendedores_por_status = defaultdict(list)
     bloqueados_hoje = []
     bases_pendentes_count = 0
-<<<<<<< HEAD
+
     dia_bloqueio_count = defaultdict(int)
 
     for v in vendedores:
@@ -200,7 +193,7 @@ def processar_dados_painel():
             'ultimo_status_data': v.get('ultimo_status_data'),
         })
         if v.get('status') == 'Bloqueado':
-=======
+
     
     dia_bloqueio_count = defaultdict(int)
 
@@ -217,24 +210,24 @@ def processar_dados_painel():
 
         if v['status'] == 'Bloqueado':
             # Simula a contagem de bloqueios por dia (usando o último status para simular o dia)
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
             try:
                 dia_semana = date.today().strftime('%A')
                 dia_bloqueio_count[dia_semana] += 1
             except:
-<<<<<<< HEAD
+
                 pass
         if not v.get('base_tratada', False):
             bases_pendentes_count += 1
 
-=======
+
                 pass # Ignora se a formatação falhar
         
         if not v['base_tratada']:
             bases_pendentes_count += 1
 
     # Encontra o dia com mais bloqueios
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
     dia_mais_bloqueio = max(dia_bloqueio_count, key=dia_bloqueio_count.get, default='N/A')
 
     return {
@@ -247,7 +240,7 @@ def processar_dados_painel():
     }
 
 def get_vendedores_by_loja_id(loja_id):
-<<<<<<< HEAD
+
     vendedores = database.get_vendedores_by_loja(loja_id)
     for v in vendedores:
         ds = database.get_disparos_semanais(v['id'])
@@ -304,7 +297,6 @@ def gerar_pdf_reportlab(loja_data, vendedores_data, ligacoes_realizadas):
     Story.append(Paragraph(f"<b>Data de Geração:</b> {date.today().strftime('%d de %B de %Y')}", styles['CustomNormalSmall']))
     Story.append(Spacer(1, 0.7 * cm))
 
-=======
     """Filtra vendedores para uma loja específica."""
     return [v for v in db_vendedores if v['loja_id'] == loja_id]
 
@@ -386,21 +378,20 @@ def gerar_pdf_reportlab(loja_data, vendedores_data, ligacoes_realizadas):
     Story.append(Spacer(1, 0.7 * cm))
 
     # Total de Convites (Sem título "KPIs")
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
     total_convites = sum(sum(v['disparos_semanais'].values()) for v in vendedores_data)
     Story.append(Paragraph(f"Total de Convites Enviados (Estimado na Semana): <u>{total_convites}</u>", styles['CustomSummary']))
     Story.append(Paragraph("Este total é a soma dos disparos semanais registrados por todos os vendedores ativos desta loja.", styles['CustomNormalSmall']))
     Story.append(Spacer(1, 0.7 * cm))
-<<<<<<< HEAD
-=======
+
     
     # Relato Manual
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
     Story.append(Paragraph("Relato Manual (Ações de Follow-up)", styles['CustomHeading2']))
     relato = ligacoes_realizadas if ligacoes_realizadas else "Nenhum relato manual fornecido no momento da geração do relatório."
     Story.append(Paragraph(relato, styles['CustomNormalSmall']))
     Story.append(Spacer(1, 0.7 * cm))
-<<<<<<< HEAD
+
 
     Story.append(Paragraph("Desempenho Individual dos Vendedores", styles['CustomHeading2']))
     table_data = [["Vendedor", "Disparos (Semana)", "Disparos (Hoje)", "Status Atual", "Base Tratada?"]]
@@ -414,7 +405,7 @@ def gerar_pdf_reportlab(loja_data, vendedores_data, ligacoes_realizadas):
             Paragraph(str(vendedor.get('disparos_dia',0)), styles['CustomNormalSmall']),
             Paragraph(status_text, styles['CustomNormalSmall']),
             Paragraph(base_tratada_text, styles['CustomNormalSmall'])
-=======
+
     
     # Tabela de Desempenho Individual
     Story.append(Paragraph("Desempenho Individual dos Vendedores", styles['CustomHeading2']))
@@ -434,12 +425,12 @@ def gerar_pdf_reportlab(loja_data, vendedores_data, ligacoes_realizadas):
             Paragraph(str(vendedor['disparos_dia']), styles['CustomNormalSmall']),
             Paragraph(status_text, styles['CustomNormalSmall']),
             Paragraph(base_tratada_text, styles['CustomNormalSmall']),
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
         ]
         table_data.append(row)
 
     if len(table_data) > 1:
-<<<<<<< HEAD
+
         table = Table(table_data, colWidths=[3.5*cm,2.5*cm,2.5*cm,3*cm,2.5*cm])
         table_style = TableStyle([
             ('BACKGROUND', (0,0), (-1,0), colors.navy),
@@ -480,7 +471,7 @@ def sanitize_filename(s: str):
     return cleaned.replace(" ", "_")
 
 # Routes (kept names)
-=======
+
         table = Table(table_data, colWidths=[3.5*cm, 2.5*cm, 2.5*cm, 3*cm, 2.5*cm])
         
         table_style = TableStyle([
@@ -507,14 +498,14 @@ def sanitize_filename(s: str):
 
 # --- ROTAS DA APLICAÇÃO (sem alterações, exceto pela chamada da função de PDF) ---
 
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
 @app.route('/')
 def index():
     return redirect(url_for('painel'))
 
 @app.route('/painel')
 def painel():
-<<<<<<< HEAD
+
     dados_painel = processar_dados_painel()
     vendedor_form = VendedorForm()
     # fill loja choices dynamically
@@ -559,7 +550,7 @@ def gerar_relatorio_pdf():
     # reload choices
     lojas = database.listar_lojas()
     form.loja_id_relatorio.choices = [(l['id'], l['nome']) for l in lojas]
-=======
+
     """Rota para o Painel de Controle Principal."""
     dados_painel = processar_dados_painel()
     
@@ -594,12 +585,12 @@ def gerar_relatorio_pdf():
     """
     form = RelatorioForm(request.form)
     form.loja_id_relatorio.choices = [(l['id'], l['nome']) for l in db_lojas] 
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
 
     if form.validate_on_submit():
         loja_id = form.loja_id_relatorio.data
         ligacoes_realizadas = form.ligacoes_realizadas.data
-<<<<<<< HEAD
+
         loja_data = database.get_loja_by_id(loja_id)
         vendedores_loja = get_vendedores_by_loja_id(loja_id)
         if not loja_data:
@@ -614,7 +605,6 @@ def gerar_relatorio_pdf():
             print(f"Erro detalhado na geração do PDF (ReportLab): {e}", file=sys.stderr)
             flash(f"Erro ao gerar PDF: {e}", 'danger')
             return redirect(url_for('painel'))
-=======
         
         loja_data = next((l for l in db_lojas if l['id'] == loja_id), None)
         vendedores_loja = get_vendedores_by_loja_id(loja_id)
@@ -636,12 +626,12 @@ def gerar_relatorio_pdf():
             flash(f"Erro ao gerar PDF: {e}. Verifique se a biblioteca 'reportlab' está instalada e se os estilos estão corretos.", 'danger')
             return redirect(url_for('painel'))
 
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
     else:
         flash("Erro de validação no formulário de relatório. Por favor, selecione uma loja.", 'warning')
         return redirect(url_for('painel'))
 
-<<<<<<< HEAD
+
 @app.route('/vendedores', methods=['GET', 'POST'])
 def vendedores():
     vendedor_form = VendedorForm()
@@ -698,7 +688,7 @@ def mudar_status_vendedor(vendedor_id, novo_status):
     except Exception as e:
         print("Erro update:", e)
         flash('Erro ao atualizar status.', 'danger')
-=======
+
 # --- Rotas de CRUD para Lojas, Vendedores, etc ---
 
 @app.route('/vendedores', methods=['GET', 'POST'])
@@ -744,51 +734,50 @@ def mudar_status_vendedor(vendedor_id, novo_status):
         vendedor['ultimo_status_tipo'] = novo_status
         vendedor['ultimo_status_data'] = date.today().strftime('%d/%m/%Y')
         flash(f'Status de {vendedor["nome"]} alterado para "{novo_status}".', 'success')
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
     return redirect(url_for('vendedores'))
 
 @app.route('/alternar_base_tratada/<int:vendedor_id>', methods=['POST'])
 def alternar_base_tratada(vendedor_id):
-<<<<<<< HEAD
+
     try:
         database.toggle_base_tratada(vendedor_id)
         flash('Base alternada com sucesso.', 'success')
     except Exception as e:
         print("Erro toggle base:", e)
         flash('Erro ao alternar base.', 'danger')
-=======
+
     vendedor = next((v for v in db_vendedores if v['id'] == vendedor_id), None)
     if vendedor:
         vendedor['base_tratada'] = not vendedor['base_tratada']
         status = 'Tratada' if vendedor['base_tratada'] else 'Pendente'
         flash(f'Base de {vendedor["nome"]} alterada para {status}.', 'success')
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
     return redirect(url_for('vendedores'))
 
 @app.route('/editar_disparos_dia', methods=['POST'])
 def editar_disparos_dia():
     vendedor_id = int(request.form.get('vendedor_id'))
     disparos_hoje = int(request.form.get('disparos_hoje'))
-<<<<<<< HEAD
+
     try:
         database.update_disparos_dia(vendedor_id, disparos_hoje)
         flash('Disparos do dia atualizados.', 'success')
     except Exception as e:
         print("Erro editar disparos dia:", e)
         flash('Erro ao atualizar disparos do dia.', 'danger')
-=======
     
     vendedor = next((v for v in db_vendedores if v['id'] == vendedor_id), None)
     if vendedor:
         vendedor['disparos_dia'] = disparos_hoje
         flash(f'Disparos do dia de {vendedor["nome"]} atualizados para {disparos_hoje}.', 'success')
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
     return redirect(url_for('vendedores'))
 
 @app.route('/editar_disparos_semana', methods=['POST'])
 def editar_disparos_semana():
     vendedor_id = int(request.form.get('vendedor_id'))
-<<<<<<< HEAD
+
     dias = ['segunda','terca','quarta','quinta','sexta','sabado','domingo']
     disparos_semanais = {dia: int(request.form.get(f'disparo_{dia}', 0)) for dia in dias}
     try:
@@ -800,7 +789,7 @@ def editar_disparos_semana():
     return redirect(url_for('vendedores'))
 
 @app.route('/lojas', methods=['GET','POST'])
-=======
+
     vendedor = next((v for v in db_vendedores if v['id'] == vendedor_id), None)
 
     if vendedor:
@@ -815,12 +804,12 @@ def editar_disparos_semana():
 
 
 @app.route('/lojas', methods=['GET', 'POST'])
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
 def lojas():
     loja_form = LojaForm()
     loja_edit_form = LojaEditForm()
     relatorio_form = RelatorioForm()
-<<<<<<< HEAD
+
     if loja_form.validate_on_submit():
         nova_loja = database.insert_loja(loja_form.nome_loja.data, loja_form.responsavel.data)
         # cria vendedor gestor também
@@ -852,7 +841,7 @@ def lojas():
                            loja_edit_form=LojaEditForm(),
                            relatorio_form=relatorio_form,
                            today_date=date.today())
-=======
+
 
     if loja_form.validate_on_submit():
         novo_loja_id = max(l['id'] for l in db_lojas) + 1 if db_lojas else 1
@@ -898,12 +887,12 @@ def lojas():
         relatorio_form=relatorio_form,
         today_date=date.today() 
     )
->>>>>>> dd5305246988e1695c03bf0a536448f0e6b7ec9d
+
 
 @app.route('/editar_loja', methods=['POST'])
 def editar_loja():
     form = LojaEditForm(request.form)
-<<<<<<< HEAD
+
     loja_id = int(request.form.get('loja_id'))
     if form.validate_on_submit():
         database.update_loja(loja_id, form.nome.data, form.responsavel.data)
@@ -914,7 +903,7 @@ def editar_loja():
 
 if __name__ == '__main__':
     app.run(debug=True)
-=======
+
     
     loja_id = int(request.form.get('loja_id'))
 
@@ -942,4 +931,3 @@ if __name__ == '__main__':
 
 if __name__ == '__main__':
     app.run(debug=True)
-
