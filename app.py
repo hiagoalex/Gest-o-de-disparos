@@ -131,7 +131,7 @@ def sanitize_filename(s: str):
     cleaned = "".join(c for c in s if c in allowed)
     return cleaned.replace(" ", "_")
 
-# PDF helpers (mantidos do seu código)
+# PDF helpers
 def myPageTemplate(canvas, doc):
     canvas.saveState()
     page_width, page_height = A4
@@ -213,7 +213,8 @@ def gerar_pdf_reportlab(loja_data, vendedores_data, ligacoes_realizadas):
     buffer.seek(0)
     return buffer, disk_path
 
-# Routes
+# ---------------------- ROUTES ----------------------
+
 @app.route('/')
 def index():
     return redirect(url_for('painel'))
@@ -243,6 +244,15 @@ def painel():
                            loja_edit_form=loja_edit_form,
                            relatorio_form=relatorio_form)
 
+@app.route('/editar_disparos_dia', methods=['POST'])
+def editar_disparos_dia():
+    vendedor_id = int(request.form.get('vendedor_id'))
+    disparos_dia = int(request.form.get('disparos_dia', 0))
+    database.update_disparos_dia(vendedor_id, disparos_dia)
+    flash(f"Disparos diários do vendedor atualizados para {disparos_dia}.", "success")
+    return redirect(request.referrer or url_for('painel'))
+
+# ---------------------- ROTAS DE VENDEDORES ----------------------
 @app.route('/vendedores', methods=['GET', 'POST'])
 def vendedores():
     vendedor_form = VendedorForm()
@@ -273,7 +283,7 @@ def vendedores():
                            relatorio_form=relatorio_form,
                            today_date=date.today())
 
-# NOVA ROTA CRIADA PARA LOJAS
+# ---------------------- ROTAS DE LOJAS ----------------------
 @app.route('/lojas', methods=['GET','POST'])
 def lojas():
     loja_form = LojaForm()
@@ -308,7 +318,6 @@ def lojas():
                            relatorio_form=relatorio_form,
                            today_date=date.today())
 
-# resto das rotas mantidas (editar, pdf, mudar status etc)
 @app.route('/editar_loja', methods=['POST'])
 def editar_loja():
     form = LojaEditForm(request.form)
@@ -320,6 +329,7 @@ def editar_loja():
         flash('Erro de validação ao editar a loja.', 'warning')
     return redirect(url_for('lojas'))
 
+# ---------------------- ROTAS DE PDF ----------------------
 @app.route('/gerar_relatorio_pdf', methods=['POST'])
 def gerar_relatorio_pdf():
     form = RelatorioForm(request.form)
@@ -336,20 +346,12 @@ def gerar_relatorio_pdf():
         try:
             pdf_buffer, disk_path = gerar_pdf_reportlab(loja_data, vendedores_loja, ligacoes_realizadas)
             filename = os.path.basename(disk_path)
-            return send_file(pdf_buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
+            return send_file(pdf_buffer, as_attachment=True, download_name=filename)
         except Exception as e:
-            print(f"Erro detalhado na geração do PDF (ReportLab): {e}", file=sys.stderr)
-            flash(f"Erro ao gerar PDF: {e}", 'danger')
+            flash(f"Erro ao gerar PDF: {str(e)}", 'danger')
             return redirect(url_for('painel'))
-    else:
-        flash("Erro de validação no formulário de relatório. Por favor, selecione uma loja.", 'warning')
-        return redirect(url_for('painel'))
-
-@app.route('/mudar_status_vendedor/<int:vendedor_id>/<string:novo_status>')
-def mudar_status_vendedor(vendedor_id, novo_status):
-    database.update_status_vendedor(vendedor_id, novo_status)
-    flash(f'Status do vendedor atualizado para {novo_status}', 'success')
-    return redirect(request.referrer or url_for('painel'))
+    flash("Formulário inválido!", "warning")
+    return redirect(url_for('painel'))
 
 if __name__ == '__main__':
     app.run(debug=True)
