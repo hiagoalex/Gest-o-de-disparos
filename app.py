@@ -17,6 +17,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import cm
+from flask import redirect, url_for, request, flash
 
 # local database helper
 import database
@@ -365,12 +366,18 @@ def editar_loja():
         flash('Erro de validação ao editar a loja.', 'warning')
     return redirect(url_for('lojas'))
 
-@app.route('/vendedores/<int:vendedor_id>/alternar_base', methods=['POST'])
-def alternar_base_tratada(vendedor_id):
-    from database import toggle_base_tratada
-    toggle_base_tratada(vendedor_id)
-    flash("Status de base tratada alterado!", "success")
-    return redirect(request.referrer or url_for('vendedores'))
+@app.route('/vendedor/<int:vendedor_id>/status/<novo_status>', methods=['POST'])
+def mudar_status_vendedor(vendedor_id, novo_status):
+    # Exemplo de lógica: atualizar status no banco
+    try:
+        # supondo que você tenha uma função update_status_vendedor(vendedor_id, novo_status)
+        update_status_vendedor(vendedor_id, novo_status)
+        flash(f'Status do vendedor {vendedor_id} alterado para {novo_status}', 'success')
+    except Exception as e:
+        flash(f'Erro ao alterar status: {str(e)}', 'danger')
+    
+    # Mantém query params originais
+    return redirect(url_for('vendedores', **request.args))
 
 # ---------------------- ROTAS DE PDF ----------------------
 @app.route('/gerar_relatorio_pdf', methods=['POST'])
