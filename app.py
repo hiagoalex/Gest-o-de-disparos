@@ -289,6 +289,7 @@ def vendedores():
     lojas = database.listar_lojas()
     vendedor_form.loja_id.choices = [(l['id'], l['nome']) for l in lojas]
     relatorio_form = RelatorioForm()
+
     if vendedor_form.validate_on_submit():
         novo_vendedor = {
             'nome': vendedor_form.nome.data,
@@ -303,15 +304,20 @@ def vendedores():
         database.insert_vendedor(novo_vendedor)
         flash(f'Vendedor {novo_vendedor["nome"]} adicionado com sucesso!', 'success')
         return redirect(url_for('vendedores'))
-    vendedores = database.listar_vendedores()
-    return render_template('dashboard.html',
-                           pagina='vendedores',
-                           vendedores=vendedores,
-                           vendedor_form=vendedor_form,
-                           loja_form=LojaForm(),
-                           loja_edit_form=LojaEditForm(),
-                           relatorio_form=relatorio_form,
-                           today_date=date.today())
+
+    # Usa a nova função que inclui os disparos semanais
+    vendedores = database.listar_vendedores_com_disparos()
+
+    return render_template(
+        'dashboard.html',
+        pagina='vendedores',
+        vendedores=vendedores,
+        vendedor_form=vendedor_form,
+        loja_form=LojaForm(),
+        loja_edit_form=LojaEditForm(),
+        relatorio_form=relatorio_form,
+        today_date=date.today()
+    )
 
 # ---------------------- ROTAS DE LOJAS ----------------------
 @app.route('/lojas', methods=['GET','POST'])

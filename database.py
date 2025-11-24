@@ -183,38 +183,28 @@ def update_disparos_semanais(vendedor_id, disparos_semana_dict):
     cur = conn.cursor()
     cur.execute("SELECT id FROM disparos_semanais WHERE vendedor_id=%s;", (vendedor_id,))
     exists = cur.fetchone()
+
+    valores = (
+        disparos_semana_dict.get('segunda',0), disparos_semana_dict.get('terca',0),
+        disparos_semana_dict.get('quarta',0), disparos_semana_dict.get('quinta',0),
+        disparos_semana_dict.get('sexta',0), disparos_semana_dict.get('sabado',0),
+        disparos_semana_dict.get('domingo',0)
+    )
+
     if exists:
         cur.execute("""
             UPDATE disparos_semanais SET segunda=%s, terca=%s, quarta=%s, quinta=%s, sexta=%s, sabado=%s, domingo=%s
             WHERE vendedor_id=%s;
-        """, (
-            disparos_semana_dict.get('segunda',0),
-            disparos_semana_dict.get('terca',0),
-            disparos_semana_dict.get('quarta',0),
-            disparos_semana_dict.get('quinta',0),
-            disparos_semana_dict.get('sexta',0),
-            disparos_semana_dict.get('sabado',0),
-            disparos_semana_dict.get('domingo',0),
-            vendedor_id
-        ))
+        """, valores + (vendedor_id,))
     else:
         cur.execute("""
             INSERT INTO disparos_semanais (vendedor_id, segunda, terca, quarta, quinta, sexta, sabado, domingo)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s);
-        """, (
-            vendedor_id,
-            disparos_semana_dict.get('segunda',0),
-            disparos_semana_dict.get('terca',0),
-            disparos_semana_dict.get('quarta',0),
-            disparos_semana_dict.get('quinta',0),
-            disparos_semana_dict.get('sexta',0),
-            disparos_semana_dict.get('sabado',0),
-            disparos_semana_dict.get('domingo',0)
-        ))
-    conn.commit()
-    cur.close()
-    conn.close()
+        """, (vendedor_id,) + valores)
 
+    conn.commit()
+    cur.close(); conn.close()
+    
 def get_disparos_semanais(vendedor_id):
     conn = get_conn()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
