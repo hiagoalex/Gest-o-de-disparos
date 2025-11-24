@@ -319,6 +319,18 @@ def vendedores():
         relatorio_form=relatorio_form,
         today_date=date.today()
     )
+@app.route('/vendedor/<int:vendedor_id>/alternar_base', methods=['POST'])
+def alternar_base_tratada(vendedor_id):
+    try:
+        # Função no database.py que alterna True/False
+        database.alternar_base_tratada(vendedor_id)
+        flash("Base tratada alterada com sucesso!", "success")
+    except Exception as e:
+        flash(f"Erro ao alterar base tratada: {e}", "danger")
+
+    # Mantém os filtros/queries da página
+    return redirect(url_for('vendedores', **request.args))
+
 
 # ---------------------- ROTAS DE LOJAS ----------------------
 @app.route('/lojas', methods=['GET','POST'])

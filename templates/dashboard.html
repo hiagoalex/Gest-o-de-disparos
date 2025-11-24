@@ -410,9 +410,12 @@
                             {% set current_status = vendedor.status %}
                             {% set current_vendedor_id = vendedor.id %}
                             
-                            <form method="POST" action="{{ url_for('alternar_base_tratada', vendedor_id=vendedor.id) }}" style="display:inline; margin-right: 5px;">
-                                <button type="submit" class="btn btn-sm btn-warning">Alternar Base</button>
+                           <form method="POST" action="{{ url_for('alternar_base_tratada', vendedor_id=vendedor.id, **request.args) }}" style="display:inline; margin-right: 5px;">
+                                <button type="submit" class="btn btn-secondary btn-sm">
+                                    Alternar Base
+                                </button>
                             </form>
+
 
 
                             {# Menu Dropdown para Ações de Status #}
@@ -425,17 +428,16 @@
 
                                     {% if current_status != 'Conectado' %}
                                         <li>
-                                            <form method="POST" action="{{ url_for('mudar_status_vendedor', vendedor_id=current_vendedor_id, novo_status='Restrito', **request.args) }}">
-                                                <button type="submit" class="btn btn-warning">Restringir</button>
+                                            <form method="POST" action="{{ url_for('mudar_status_vendedor', vendedor_id=current_vendedor_id, novo_status='Conectado', **request.args) }}">
+                                                <button type="submit" class="dropdown-item text-success"><i class="bi bi-plug-fill me-2"></i> Conectado</button>
                                             </form>
-
                                         </li>
                                     {% endif %}
                                     
                                     {% if current_status != 'Restrito' %}
                                         <li>
                                             <form method="POST" action="{{ url_for('mudar_status_vendedor', vendedor_id=current_vendedor_id, novo_status='Restrito', **request.args) }}">
-                                                <button type="submit" class="dropdown-item text-info"><i class="bi bi-pause-circle-fill me-2"></i> Restrito</button>
+                                                <button type="submit" class="btn btn-warning">Restringir</button>
                                             </form>
                                         </li>
                                     {% endif %}

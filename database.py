@@ -163,19 +163,18 @@ def update_vendedor_status(vendedor_id, novo_status):
     conn.commit()
     cur.close(); conn.close()
 
-def toggle_base_tratada(vendedor_id):
+def alternar_base_tratada(vendedor_id):
     conn = get_conn()
-    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    cur.execute("SELECT base_tratada FROM vendedores WHERE id=%s;", (vendedor_id,))
-    r = cur.fetchone()
-    if not r:
-        cur.close(); conn.close()
-        return None
-    novo = not r['base_tratada']
-    cur.execute("UPDATE vendedores SET base_tratada=%s WHERE id=%s RETURNING *;", (novo, vendedor_id))
-    row = cur.fetchone()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE vendedores
+        SET base_tratada = NOT base_tratada
+        WHERE id=%s;
+    """, (vendedor_id,))
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
+
     return dict(row)
 
 def update_disparos_semanais(vendedor_id, disparos_semana_dict):
@@ -219,7 +218,7 @@ def update_disparos_dia(vendedor_id, valor):
     cur.execute("UPDATE vendedores SET disparos_dia=%s WHERE id=%s;", (valor, vendedor_id))
     conn.commit()
     cur.close(); conn.close()
-    
+
 def listar_vendedores_com_disparos():
     vendedores = listar_vendedores()
     for v in vendedores:
