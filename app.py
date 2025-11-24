@@ -265,6 +265,7 @@ def editar_disparos_semana():
 
     flash("Disparos semanais atualizados com sucesso!", "success")
     return redirect(request.referrer or url_for('painel'))
+
 # ---------------------- ROTAS DE VENDEDORES ----------------------
 @app.route('/vendedores', methods=['GET', 'POST'])
 def vendedores():
