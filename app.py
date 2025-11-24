@@ -10,6 +10,9 @@ import locale
 from collections import defaultdict
 import sys
 import os
+from flask import render_template, send_file, flash
+from xhtml2pdf import pisa
+
 
 # reportlab
 from reportlab.lib.pagesizes import A4
@@ -18,6 +21,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import cm
 from flask import redirect, url_for, request, flash
+
 
 # local database helper
 import database
@@ -154,65 +158,61 @@ def myPageTemplate(canvas, doc):
     canvas.drawString(doc.leftMargin + 20, 15, address_text)
     canvas.restoreState()
 
-def gerar_pdf_reportlab(loja_data, vendedores_data, ligacoes_realizadas):
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=72)
-    Story = []
-    styles = PDF_STYLES
-    Story.append(Paragraph("Relatório Gerencial de Desempenho de Disparos", styles['CustomTitle']))
-    Story.append(Spacer(1, 0.5 * cm))
-    Story.append(Paragraph("Informações da Loja e Período", styles['CustomHeading2']))
-    Story.append(Paragraph(f"<b>Loja:</b> {loja_data.get('nome','N/A')}", styles['CustomNormalSmall']))
-    Story.append(Paragraph(f"<b>Responsável:</b> {loja_data.get('responsavel','N/A')}", styles['CustomNormalSmall']))
-    Story.append(Paragraph(f"<b>Data de Geração:</b> {date.today().strftime('%d de %B de %Y')}", styles['CustomNormalSmall']))
-    Story.append(Spacer(1, 0.7 * cm))
-    total_convites = sum(sum(v['disparos_semanais'].values()) for v in vendedores_data)
-    Story.append(Paragraph(f"Total de Convites Enviados (Estimado na Semana): <u>{total_convites}</u>", styles['CustomSummary']))
-    Story.append(Paragraph("Este total é a soma dos disparos semanais registrados por todos os vendedores ativos desta loja.", styles['CustomNormalSmall']))
-    Story.append(Spacer(1, 0.7 * cm))
-    Story.append(Paragraph("Relato Manual (Ações de Follow-up)", styles['CustomHeading2']))
-    relato = ligacoes_realizadas if ligacoes_realizadas else "Nenhum relato manual fornecido no momento da geração do relatório."
-    Story.append(Paragraph(relato, styles['CustomNormalSmall']))
-    Story.append(Spacer(1, 0.7 * cm))
-    Story.append(Paragraph("Desempenho Individual dos Vendedores", styles['CustomHeading2']))
-    table_data = [["Vendedor", "Disparos (Semana)", "Disparos (Hoje)", "Status Atual", "Base Tratada?"]]
-    for vendedor in vendedores_data:
-        total_semana = sum(vendedor['disparos_semanais'].values())
-        status_text = vendedor.get('status', '')
-        base_tratada_text = 'Sim' if vendedor.get('base_tratada') else 'Não'
-        row = [
-            Paragraph(vendedor.get('nome',''), styles['CustomNormalSmall']),
-            Paragraph(str(total_semana), styles['CustomNormalSmall']),
-            Paragraph(str(vendedor.get('disparos_dia',0)), styles['CustomNormalSmall']),
-            Paragraph(status_text, styles['CustomNormalSmall']),
-            Paragraph(base_tratada_text, styles['CustomNormalSmall'])
-        ]
-        table_data.append(row)
-    if len(table_data) > 1:
-        table = Table(table_data, colWidths=[3.5*cm,2.5*cm,2.5*cm,3*cm,2.5*cm])
-        table_style = TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.navy),
-            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-            ('VALIGN',(0,0),(-1,-1),'MIDDLE'),
-            ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
-            ('GRID',(0,0),(-1,-1),0.5,colors.lightgrey),
-            ('BACKGROUND',(0,1),(-1,-1),colors.white),
-        ])
-        table.setStyle(table_style)
-        Story.append(table)
-    else:
-        Story.append(Paragraph("Nenhum vendedor encontrado para esta loja.", styles['CustomNormalSmall']))
-    doc.build(Story, onFirstPage=myPageTemplate, onLaterPages=myPageTemplate)
-    buffer.seek(0)
-    folder_base = os.path.join('static', 'pdfs', sanitize_filename(loja_data.get('nome','loja')))
+from flask import render_template, send_file, flash
+from xhtml2pdf import pisa
+import io
+import os
+from datetime import date
+
+def gerar_pdf_xhtml2pdf(loja_data, vendedores_loja, ligacoes_realizadas):
+    # Garantir que dados existam
+    loja_data = loja_data or {'nome':'N/A','responsavel':'N/A'}
+    vendedores_loja = vendedores_loja or []
+
+    for v in vendedores_loja:
+        if 'disparos_semanais' not in v or not v['disparos_semanais']:
+            v['disparos_semanais'] = {d:0 for d in ['segunda','terca','quarta','quinta','sexta','sabado','domingo']}
+        status_classes = {
+            'Conectado': 'status-connected',
+            'Bloqueado': 'status-blocked',
+            'Restrito': 'status-restricted',
+            'Desconectado': 'status-disconnected'
+        }
+        v['status_class'] = status_classes.get(v.get('status','Desconectado'), 'status-disconnected')
+
+    total_convites = sum(sum(v['disparos_semanais'].values()) for v in vendedores_loja)
+    
+    # Renderiza HTML
+    html = render_template(
+        'relatorio_template_html.html',
+        loja=loja_data,
+        vendedores_loja=vendedores_loja,
+        data_hoje=date.today().strftime('%d/%m/%Y'),
+        total_convites_enviados=total_convites,
+        ligacoes_realizadas=ligacoes_realizadas
+    )
+
+    # Gerar PDF
+    pdf = io.BytesIO()
+    pisa_status = pisa.CreatePDF(io.StringIO(html), dest=pdf)
+    
+    if pisa_status.err:
+        raise Exception("Erro ao gerar PDF")
+
+    pdf.seek(0)
+
+    # Criar pasta para salvar PDF
+    folder_base = os.path.join('static', 'pdfs', loja_data.get('nome','loja'))
     os.makedirs(folder_base, exist_ok=True)
-    filename_base = f"Relatorio_{sanitize_filename(loja_data.get('nome','loja'))}_{date.today().strftime('%Y%m%d')}.pdf"
-    disk_path = os.path.join(folder_base, filename_base)
+    filename = f"Relatorio_{loja_data.get('nome','loja')}_{date.today().strftime('%Y%m%d')}.pdf"
+    disk_path = os.path.join(folder_base, filename)
+    
     with open(disk_path, 'wb') as f:
-        f.write(buffer.getbuffer())
-    buffer.seek(0)
-    return buffer, disk_path
+        f.write(pdf.getbuffer())
+
+    pdf.seek(0)
+    return pdf, disk_path
+
 
 # ---------------------- ROUTES ----------------------
 
@@ -386,54 +386,31 @@ def editar_loja():
 
 # ---------------------- ROTAS DE PDF ----------------------
 @app.route('/gerar_relatorio_pdf', methods=['POST'])
-def gerar_pdf_xhtml2pdf(loja_data, vendedores_loja, ligacoes_realizadas):
-    # Garantir que dados existam
-    loja_data = loja_data or {'nome':'N/A','responsavel':'N/A'}
-    vendedores_loja = vendedores_loja or []
+def gerar_relatorio_pdf():
+    form = RelatorioForm(request.form)
+    lojas = database.listar_lojas()
+    form.loja_id_relatorio.choices = [(l['id'], l['nome']) for l in lojas]
 
-    for v in vendedores_loja:
-        if 'disparos_semanais' not in v or not v['disparos_semanais']:
-            v['disparos_semanais'] = {d:0 for d in ['segunda','terca','quarta','quinta','sexta','sabado','domingo']}
-        status_classes = {
-            'Conectado': 'status-connected',
-            'Bloqueado': 'status-blocked',
-            'Restrito': 'status-restricted',
-            'Desconectado': 'status-disconnected'
-        }
-        v['status_class'] = status_classes.get(v.get('status','Desconectado'), 'status-disconnected')
+    if form.validate_on_submit():
+        loja_id = form.loja_id_relatorio.data
+        ligacoes_realizadas = form.ligacoes_realizadas.data
+        loja_data = database.get_loja_by_id(loja_id)
+        vendedores_loja = get_vendedores_by_loja_id(loja_id)
 
-    total_convites = sum(sum(v['disparos_semanais'].values()) for v in vendedores_loja)
-    
-    # Renderiza HTML
-    html = render_template(
-        'relatorio_template_html.html',
-        loja=loja_data,
-        vendedores_loja=vendedores_loja,
-        data_hoje=date.today().strftime('%d/%m/%Y'),
-        total_convites_enviados=total_convites,
-        ligacoes_realizadas=ligacoes_realizadas
-    )
+        if not loja_data:
+            flash(f"Erro: Loja com ID {loja_id} não encontrada.", 'danger')
+            return redirect(url_for('painel'))
 
-    # Gerar PDF
-    pdf = io.BytesIO()
-    pisa_status = pisa.CreatePDF(io.StringIO(html), dest=pdf)
-    
-    if pisa_status.err:
-        raise Exception("Erro ao gerar PDF")
+        try:
+            pdf_buffer, disk_path = gerar_pdf_xhtml2pdf(loja_data, vendedores_loja, ligacoes_realizadas)
+            filename = os.path.basename(disk_path)
+            return send_file(pdf_buffer, as_attachment=True, download_name=filename)
+        except Exception as e:
+            flash(f"Erro ao gerar PDF: {str(e)}", 'danger')
+            return redirect(url_for('painel'))
 
-    pdf.seek(0)
-
-    # Criar pasta para salvar PDF
-    folder_base = os.path.join('static', 'pdfs', loja_data.get('nome','loja'))
-    os.makedirs(folder_base, exist_ok=True)
-    filename = f"Relatorio_{loja_data.get('nome','loja')}_{date.today().strftime('%Y%m%d')}.pdf"
-    disk_path = os.path.join(folder_base, filename)
-    
-    with open(disk_path, 'wb') as f:
-        f.write(pdf.getbuffer())
-
-    pdf.seek(0)
-    return pdf, disk_path
+    flash("Formulário inválido!", "warning")
+    return redirect(url_for('painel'))
 
 if __name__ == '__main__':
     app.run(debug=True)
