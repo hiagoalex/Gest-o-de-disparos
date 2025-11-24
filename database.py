@@ -178,7 +178,7 @@ def toggle_base_tratada(vendedor_id):
     cur.close(); conn.close()
     return dict(row)
 
-def update_disparos_semanais(vendedor_id, disp):
+def update_disparos_semanais(vendedor_id, disparos_semana):
     conn = get_conn()
     cur = conn.cursor()
     cur.execute("SELECT id FROM disparos_semanais WHERE vendedor_id=%s;", (vendedor_id,))
