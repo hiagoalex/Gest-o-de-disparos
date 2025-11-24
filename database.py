@@ -204,7 +204,7 @@ def update_disparos_semanais(vendedor_id, disparos_semana_dict):
 
     conn.commit()
     cur.close(); conn.close()
-    
+
 def get_disparos_semanais(vendedor_id):
     conn = get_conn()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
@@ -219,3 +219,13 @@ def update_disparos_dia(vendedor_id, valor):
     cur.execute("UPDATE vendedores SET disparos_dia=%s WHERE id=%s;", (valor, vendedor_id))
     conn.commit()
     cur.close(); conn.close()
+    
+def listar_vendedores_com_disparos():
+    vendedores = listar_vendedores()
+    for v in vendedores:
+        disparos = get_disparos_semanais(v['id'])
+        v['disparos_semanais'] = disparos if disparos else {
+            'segunda': 0, 'terca': 0, 'quarta': 0, 'quinta': 0,
+            'sexta': 0, 'sabado': 0, 'domingo': 0
+        }
+    return vendedores
