@@ -178,7 +178,7 @@ def toggle_base_tratada(vendedor_id):
     cur.close(); conn.close()
     return dict(row)
 
-def update_disparos_semanais(vendedor_id, disparos_semana):
+def update_disparos_semanais(vendedor_id, disparos_semana_dict):
     conn = get_conn()
     cur = conn.cursor()
     cur.execute("SELECT id FROM disparos_semanais WHERE vendedor_id=%s;", (vendedor_id,))
@@ -187,14 +187,33 @@ def update_disparos_semanais(vendedor_id, disparos_semana):
         cur.execute("""
             UPDATE disparos_semanais SET segunda=%s, terca=%s, quarta=%s, quinta=%s, sexta=%s, sabado=%s, domingo=%s
             WHERE vendedor_id=%s;
-        """, (disp.get('segunda',0), disp.get('terca',0), disp.get('quarta',0), disp.get('quinta',0), disp.get('sexta',0), disp.get('sabado',0), disp.get('domingo',0), vendedor_id))
+        """, (
+            disparos_semana_dict.get('segunda',0),
+            disparos_semana_dict.get('terca',0),
+            disparos_semana_dict.get('quarta',0),
+            disparos_semana_dict.get('quinta',0),
+            disparos_semana_dict.get('sexta',0),
+            disparos_semana_dict.get('sabado',0),
+            disparos_semana_dict.get('domingo',0),
+            vendedor_id
+        ))
     else:
         cur.execute("""
             INSERT INTO disparos_semanais (vendedor_id, segunda, terca, quarta, quinta, sexta, sabado, domingo)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s);
-        """, (vendedor_id, disp.get('segunda',0), disp.get('terca',0), disp.get('quarta',0), disp.get('quinta',0), disp.get('sexta',0), disp.get('sabado',0), disp.get('domingo',0)))
+        """, (
+            vendedor_id,
+            disparos_semana_dict.get('segunda',0),
+            disparos_semana_dict.get('terca',0),
+            disparos_semana_dict.get('quarta',0),
+            disparos_semana_dict.get('quinta',0),
+            disparos_semana_dict.get('sexta',0),
+            disparos_semana_dict.get('sabado',0),
+            disparos_semana_dict.get('domingo',0)
+        ))
     conn.commit()
-    cur.close(); conn.close()
+    cur.close()
+    conn.close()
 
 def get_disparos_semanais(vendedor_id):
     conn = get_conn()

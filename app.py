@@ -244,27 +244,43 @@ def painel():
                            loja_edit_form=loja_edit_form,
                            relatorio_form=relatorio_form)
 
-@app.route('/editar_disparos_semana', methods=['POST'])
+@app.route("/editar_disparos_semana", methods=["POST"])
 def editar_disparos_semana():
-    vendedor_id = int(request.form.get('vendedor_id'))
+    from database import atualizar_disparos_hoje, atualizar_disparos_semana
+    vendedor_id = request.form.get("vendedor_id")
 
-    # Disparos da semana enviados pelo formulário
-    dias_semana = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo']
+    if not vendedor_id:
+        flash("Erro: Vendedor não identificado.", "danger")
+        return redirect(request.referrer or url_for("vendedores"))
+
+    # CASO 1 → Atualização de disparos DIÁRIOS
+    disparos_hoje = request.form.get("disparos_hoje")
+    if disparos_hoje is not None:
+        try:
+            atualizar_disparos_hoje(vendedor_id, int(disparos_hoje))
+            flash("Disparos do dia atualizados com sucesso!", "success")
+        except Exception as e:
+            flash(f"Erro ao atualizar disparos diários: {e}", "danger")
+
+        return redirect(url_for("vendedores"))
+
+    # CASO 2 → Atualização de disparos SEMANAIS
+    dias = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"]
     disparos_semana = {}
 
-    # Lê cada dia do formulário e transforma em inteiro
-    for dia in dias_semana:
-        valor = request.form.get(dia, 0)
-        try:
-            disparos_semana[dia] = int(valor)
-        except ValueError:
-            disparos_semana[dia] = 0
+    try:
+        for dia in dias:
+            valor = request.form.get(f"disparo_{dia}")
+            disparos_semana[dia] = int(valor) if valor is not None else 0
 
-    # Atualiza no banco usando database.py
-    database.update_disparos_semanais(vendedor_id, disparos_semana)
+        atualizar_disparos_semana(vendedor_id, disparos_semana)
+        flash("Disparos semanais atualizados com sucesso!", "success")
 
-    flash("Disparos semanais atualizados com sucesso!", "success")
-    return redirect(request.referrer or url_for('painel'))
+    except Exception as e:
+        flash(f"Erro ao atualizar disparos da semana: {e}", "danger")
+
+    return redirect(url_for("vendedores"))
+
 
 # ---------------------- ROTAS DE VENDEDORES ----------------------
 @app.route('/vendedores', methods=['GET', 'POST'])
