@@ -171,7 +171,6 @@ def update_status_vendedor(vendedor_id, novo_status):
     cur.close()
     conn.close()
 
-
 def alternar_base_tratada(vendedor_id):
     conn = get_conn()
     cur = conn.cursor()

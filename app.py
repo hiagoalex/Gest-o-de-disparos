@@ -380,16 +380,14 @@ def editar_loja():
 
 @app.route('/vendedor/<int:vendedor_id>/status/<novo_status>', methods=['POST'])
 def mudar_status_vendedor(vendedor_id, novo_status):
-    # Exemplo de lógica: atualizar status no banco
     try:
-        # supondo que você tenha uma função update_status_vendedor(vendedor_id, novo_status)
         update_status_vendedor(vendedor_id, novo_status)
-        flash(f'Status do vendedor {vendedor_id} alterado para {novo_status}', 'success')
+        flash("Status alterado com sucesso!", "success")
     except Exception as e:
-        flash(f'Erro ao alterar status: {str(e)}', 'danger')
-    
-    # Mantém query params originais
+        flash(f"Erro ao alterar status: {e}", "danger")
+
     return redirect(url_for('vendedores', **request.args))
+
 
 # ---------------------- ROTAS DE PDF ----------------------
 @app.route('/gerar_relatorio_pdf', methods=['POST'])
