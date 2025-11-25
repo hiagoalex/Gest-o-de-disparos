@@ -228,6 +228,12 @@ def index():
 @app.route('/painel')
 def painel():
     dados_painel = processar_dados_painel()
+
+    # 🔵 CORREÇÃO: cálculo TOTAL DE DISPAROS
+    vendedores_temp = database.listar_vendedores()
+    total_disparos = sum(v.get('disparos_dia') or 0 for v in vendedores_temp)
+    dados_painel['total_disparos'] = total_disparos
+
     vendedor_form = VendedorForm()
     lojas = database.listar_lojas()
     vendedor_form.loja_id.choices = [(l['id'], l['nome']) for l in lojas]
@@ -252,7 +258,7 @@ def painel():
 
 @app.route("/editar_disparos_semana", methods=["POST"])
 def editar_disparos_semana():
-    from database import atualizar_disparos_hoje, atualizar_disparos_semana
+    from database import atualizar_disparos_dia, update_disparos_semanais
     vendedor_id = request.form.get("vendedor_id")
 
     if not vendedor_id:
@@ -263,7 +269,7 @@ def editar_disparos_semana():
     disparos_hoje = request.form.get("disparos_hoje")
     if disparos_hoje is not None:
         try:
-            atualizar_disparos_hoje(vendedor_id, int(disparos_hoje))
+            atualizar_disparos_dia(vendedor_id, int(disparos_hoje))
             flash("Disparos do dia atualizados com sucesso!", "success")
         except Exception as e:
             flash(f"Erro ao atualizar disparos diários: {e}", "danger")
@@ -279,7 +285,7 @@ def editar_disparos_semana():
             valor = request.form.get(f"disparo_{dia}")
             disparos_semana[dia] = int(valor) if valor is not None else 0
 
-        atualizar_disparos_semana(vendedor_id, disparos_semana)
+        update_disparos_semanais(vendedor_id, disparos_semana)
         flash("Disparos semanais atualizados com sucesso!", "success")
 
     except Exception as e:
