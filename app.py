@@ -90,10 +90,10 @@ class RelatorioForm(FlaskForm):
 def processar_dados_painel():
     vendedores = database.listar_vendedores()
     for v in vendedores:
-        ds = database.get_disparos_semanais(v['id'])
-        if not ds:
-            ds = {dia: 0 for dia in ['segunda','terca','quarta','quinta','sexta','sabado','domingo']}
-        v['disparos_semanais'] = ds
+    v['disparos_hoje'] = database.get_disparos_hoje(v['id']) or 0
+    ds = database.get_disparos_semanais(v['id'])
+    v['disparos_semanais'] = ds if ds else {dia: 0 for dia in ['segunda','terca','quarta','quinta','sexta','sabado','domingo']}
+
     total_disparos = sum(sum(v['disparos_semanais'].values()) for v in vendedores)
     status_kpis = defaultdict(int)
     vendedores_por_status = defaultdict(list)
@@ -242,8 +242,10 @@ def painel():
     relatorio_form = RelatorioForm()
     vendedores = database.listar_vendedores()
     for v in vendedores:
-        ds = database.get_disparos_semanais(v['id'])
-        v['disparos_semanais'] = ds if ds else {dia: 0 for dia in ['segunda','terca','quarta','quinta','sexta','sabado','domingo']}
+    ds = database.get_disparos_semanais(v['id'])
+    v['disparos_semanais'] = ds if ds else {dia: 0 for dia in ['segunda','terca','quarta','quinta','sexta','sabado','domingo']}
+
+    v['disparos_hoje'] = database.get_disparos_hoje(v['id']) or 0
     eventos_raw = []
     return render_template('dashboard.html',
                            pagina='painel',
