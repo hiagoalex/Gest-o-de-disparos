@@ -337,6 +337,23 @@ def deletar_vendedor(vendedor_id):
     flash('Vendedor removido com sucesso!', 'success')
     return redirect(url_for('vendedores'))
 
+@app.route("/editar_disparos_dia", methods=["POST"])
+def editar_disparos_dia():
+    vendedor_id = request.form.get("vendedor_id")
+    disparos_hoje = request.form.get("disparos_hoje")
+
+    if not vendedor_id or disparos_hoje is None:
+        flash("Erro ao salvar disparos. Dados incompletos.", "danger")
+        return redirect(url_for("vendedores"))
+
+    try:
+        database.atualizar_disparos_dia(vendedor_id, disparos_hoje)
+        flash("Disparos de hoje atualizados com sucesso!", "success")
+    except Exception as e:
+        flash(f"Erro ao atualizar: {e}", "danger")
+
+    return redirect(url_for("vendedores"))
+
 # ---------------------- ROTAS DE LOJAS ----------------------
 @app.route('/lojas', methods=['GET','POST'])
 def lojas():

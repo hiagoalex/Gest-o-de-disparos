@@ -248,3 +248,21 @@ def listar_vendedores_com_disparos():
             'sexta': 0, 'sabado': 0, 'domingo': 0
         }
     return vendedores
+
+def atualizar_disparos_dia(vendedor_id, disparos_hoje):
+    from app import conn
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE vendedores
+            SET disparos_hoje = %s
+            WHERE id = %s
+        """, (disparos_hoje, vendedor_id))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"Erro ao atualizar disparos do dia: {e}")
+        raise e
+    finally:
+        cursor.close()
