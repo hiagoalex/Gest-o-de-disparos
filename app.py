@@ -89,12 +89,11 @@ class RelatorioForm(FlaskForm):
 # Helpers
 def processar_dados_painel():
     vendedores = database.listar_vendedores()
-for v in vendedores:
-    ds = database.get_disparos_semanais(v['id'])
-    if not ds:
-        # novo vendedor → inicia com zeros
-        ds = {dia: 0 for dia in ['segunda','terca','quarta','quinta','sexta','sabado','domingo']}
-    v['disparos_semanais'] = ds
+    for v in vendedores:
+        ds = database.get_disparos_semanais(v['id'])
+        if not ds:
+            ds = {dia: 0 for dia in ['segunda','terca','quarta','quinta','sexta','sabado','domingo']}
+        v['disparos_semanais'] = ds
     total_disparos = sum(sum(v['disparos_semanais'].values()) for v in vendedores)
     status_kpis = defaultdict(int)
     vendedores_por_status = defaultdict(list)
@@ -118,6 +117,7 @@ for v in vendedores:
         if not v.get('base_tratada', False):
             bases_pendentes_count += 1
     dia_mais_bloqueio = max(dia_bloqueio_count, key=dia_bloqueio_count.get, default='N/A')
+
     return {
         'total_disparos': total_disparos,
         'status_kpis': status_kpis,
