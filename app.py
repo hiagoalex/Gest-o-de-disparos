@@ -340,6 +340,15 @@ def mudar_status_vendedor(vendedor_id, novo_status):
         flash("Erro ao alterar status")
     return redirect(url_for('vendedores'))
 
+# Apagar um vendedor
+@app.route('/apagar_vendedor/<int:vendedor_id>', methods=['POST'])
+def apagar_vendedor(vendedor_id):
+    vendedor = Vendedor.query.get_or_404(vendedor_id)
+    db.session.delete(vendedor)
+    db.session.commit()
+    flash(f'Vendedor "{vendedor.nome}" apagado com sucesso!', 'success')
+    return redirect(url_for('painel'))
+
 # ---------------------- ROTAS DE LOJAS ----------------------
 @app.route('/lojas', methods=['GET','POST'])
 def lojas():
@@ -385,6 +394,14 @@ def editar_loja():
     else:
         flash('Erro de validação ao editar a loja.', 'warning')
     return redirect(url_for('lojas'))
+
+@app.route('/apagar_loja/<int:loja_id>', methods=['POST'])
+def apagar_loja(loja_id):
+    loja = Loja.query.get_or_404(loja_id)
+    db.session.delete(loja)
+    db.session.commit()
+    flash(f'Loja "{loja.nome}" apagada com sucesso!', 'success')
+    return redirect(url_for('painel'))
 
 # ---------------------- ROTAS DE PDF ----------------------
 @app.route('/gerar_relatorio_pdf')
