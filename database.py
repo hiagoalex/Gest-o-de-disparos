@@ -249,6 +249,15 @@ def listar_vendedores_com_disparos():
         }
     return vendedores
 
+def get_disparos_hoje(vendedor_id):
+    conn = get_conn()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("SELECT disparos_dia FROM vendedores WHERE id = %s;", (vendedor_id,))
+    row = cur.fetchone()
+    cur.close(); conn.close()
+    return row['disparos_dia'] if row and row['disparos_dia'] is not None else 0
+
+
 def atualizar_disparos_dia(vendedor_id, disparos_hoje):
     conn = get_conn()
     cur = conn.cursor()
