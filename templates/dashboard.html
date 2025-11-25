@@ -355,21 +355,25 @@
                         <th class="text-center" style="width: 150px;">Ações Rápidas</th>
                     </tr>
                 </thead>
-        <tbody>
+<tbody>
 {% for vendedor in vendedores %}
 <tr>
     <td>{{ vendedor.nome }}</td>
-    <td>{{ vendedor.loja_nome }}</td>  {# Mostra o nome da loja #}
+    <td>{{ vendedor.loja_nome }}</td>
     <td>{{ vendedor.status }}</td>
+    <td class="text-center"><span class="badge bg-secondary">{{ vendedor.base_contatos | default(0) }}</span></td>
+    <td class="text-center"><span class="badge bg-primary">{{ vendedor.disparos_hoje | default(0) }}</span></td>
+    <td class="text-center"><span class="badge bg-success">{{ vendedor.disparos_semana | default(0) }}</span></td>
 
-    <td>
-        <div class="dropdown">
+    <td class="text-center" style="width:150px;">
+
+        <!-- ALTERAR STATUS (colocado corretamente no menu de ações) -->
+        <div class="dropdown d-inline">
             <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                Alterar Status
+                Status
             </button>
             <ul class="dropdown-menu">
                 {% set current_status = vendedor.status %}
-
                 {% for status in ['Conectado', 'Restrito', 'Bloqueado', 'Desconectado'] %}
                     {% if status != current_status %}
                         <li>
@@ -381,19 +385,15 @@
                 {% endfor %}
             </ul>
         </div>
-    </td>
 
-    <td class="text-center"><span class="badge bg-secondary">{{ vendedor.base_contatos | default(0) }}</span></td>
-    <td class="text-center"><span class="badge bg-primary">{{ vendedor.disparos_hoje | default(0) }}</span></td>
-    <td class="text-center"><span class="badge bg-success">{{ vendedor.disparos_semana | default(0) }}</span></td>
-
-    <td class="text-center">
+        <!-- DELETAR -->
         <form method="POST" action="{{ url_for('deletar_vendedor', vendedor_id=vendedor.id) }}" style="display:inline;">
             <button type="submit" class="btn btn-danger btn-sm"
             onclick="return confirm('Deseja realmente excluir este vendedor?')">
                 <i class="bi bi-trash"></i>
             </button>
         </form>
+
     </td>
 </tr>
 {% endfor %}
