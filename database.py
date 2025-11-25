@@ -250,3 +250,17 @@ def delete_loja(id):
     cursor.execute(query, (id,))
     conn.commit()
     cursor.close()
+
+def deletar_vendedor(vendedor_id):
+    from app import conn  # se você usa a conn no app.py
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("DELETE FROM vendedores WHERE id = %s", (vendedor_id,))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"Erro ao deletar vendedor: {e}")
+        raise e
+    finally:
+        cursor.close()
