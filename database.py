@@ -251,8 +251,19 @@ def delete_loja(id):
     conn.commit()
     cursor.close()
 
+def listar_vendedores():
+    conn = connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id, nome, telefone FROM vendedores ORDER BY id DESC")
+    vendedores = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return vendedores
+
 def deletar_vendedor(vendedor_id):
-    conn = connection()  # abre nova conexão
+    conn = connection()
     cursor = conn.cursor()
 
     try:
@@ -261,7 +272,9 @@ def deletar_vendedor(vendedor_id):
     except Exception as e:
         conn.rollback()
         print(f"Erro ao deletar vendedor: {e}")
-        raise e
+        return False
     finally:
         cursor.close()
-        conn.close()  # fecha a conexão corretamente
+        conn.close()
+
+    return True
